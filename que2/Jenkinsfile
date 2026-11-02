@@ -1,0 +1,40 @@
+
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    IMAGE="myimage"
+                    TAG="v${BUILD_NUMBER}"
+
+                    docker build -t ${IMAGE}:${TAG} .
+                '''
+            }
+        }
+
+        stage('Update Docker Swarm') {
+            steps {
+                sh '''
+                    IMAGE="myimage"
+                    TAG="v${BUILD_NUMBER}"
+
+                    docker service update \
+                        --image ${IMAGE}:${TAG} \
+                        pgcp-itiss
+                '''
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh '''
+                    docker service ls
+                    docker service ps pgcp-itiss
+                '''
+            }
+        }
+    }
+}
